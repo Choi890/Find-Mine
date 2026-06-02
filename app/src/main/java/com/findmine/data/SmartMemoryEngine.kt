@@ -39,7 +39,8 @@ object SmartMemoryEngine {
         now: Long = System.currentTimeMillis(),
         limit: Int = 8,
     ): List<SmartSuggestion> {
-        // Score recent items with both user history and current context so reminders stay practical.
+        // 외출, 비, 학교, 출장 같은 현재 상황과 사용자가 자주 찾은 물건 기록을 합쳐 추천 우선순위를 계산한다.
+        // 점수는 즐겨찾기, 검색 횟수, 반복 기록, 최근성, 상황 키워드가 모두 더해지는 구조다.
         val latest = lastSeen(records, limit = records.size.coerceAtLeast(1))
         val historyCounts = records.groupingBy { MemoryTextParser.normalize(it.itemName) }.eachCount()
         val contextText = MemoryTextParser.normalizeForEmbedding(context.scheduleText)
@@ -125,7 +126,8 @@ object SmartMemoryEngine {
         records: List<MemoryRecord>,
         limit: Int = 5,
     ): List<PhotoMemoryLink> {
-        // Combine OCR text, parsed fields, and labels before matching photos against saved memories.
+        // 사진 분석 결과를 기존 메모와 연결한다.
+        // OCR 원문, 파싱된 물건명/위치/태그, 이미지 라벨 번역어를 모두 검색어로 묶어 유사도를 계산한다.
         val labelText = analysis.labels.joinToString(" ") { it.text }
         val query = listOf(
             analysis.text,

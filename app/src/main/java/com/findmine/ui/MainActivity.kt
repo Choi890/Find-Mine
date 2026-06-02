@@ -161,7 +161,8 @@ class MainActivity : ComponentActivity() {
 private fun FindMineApp(
     viewModel: FindMineViewModel = viewModel(),
 ) {
-    // This screen owns Android-only launchers while the ViewModel owns all searchable memory state.
+    // 화면은 Compose로 그리지만, 카메라/갤러리/음성 인식/알림 권한은 Android 런처가 담당한다.
+    // ViewModel은 검색어, 메모 목록, OCR 상태, 추천 결과처럼 화면이 관찰해야 하는 데이터를 들고 있다.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -184,7 +185,8 @@ private fun FindMineApp(
     var voiceTarget by remember { mutableStateOf(VoiceTarget.Search) }
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Result launchers feed speech, camera, gallery, and notification outcomes back into one ViewModel.
+    // 각 런처는 외부 작업 결과를 받아 ViewModel에 전달한다.
+    // 예를 들어 음성 결과는 검색창 또는 작성 초안으로 들어가고, 사진 결과는 OCR 분석으로 이어진다.
     val voiceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
@@ -296,7 +298,8 @@ private fun FindMineApp(
     }
 
     Scaffold(
-        // The scaffold keeps the three workflows connected through shared navigation and reminders.
+        // Scaffold는 검색, 기록 추가, 알림 세 화면을 하나의 앱 구조로 묶는다.
+        // 하단 네비게이션으로 섹션을 바꾸고, FAB는 어디서든 새 메모 작성 화면으로 진입하게 한다.
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
