@@ -29,6 +29,7 @@ data class ImageLabelCandidate(
 class ImageTextRecognizer(
     private val context: Context,
 ) {
+    // ML Kit clients are lazy so the app starts quickly and initializes models only when OCR is used.
     private val latinRecognizer by lazy {
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     }
@@ -43,6 +44,7 @@ class ImageTextRecognizer(
     }
 
     suspend fun recognize(uriText: String): OcrAnalysis = withContext(Dispatchers.IO) {
+        // Run Latin OCR, Korean OCR, and image labels together to give the parser richer context.
         val uri = Uri.parse(uriText)
         val image = InputImage.fromFilePath(context, uri)
 
@@ -68,6 +70,7 @@ class ImageTextRecognizer(
     }
 
     private fun mergeRecognizedText(vararg texts: String): String =
+        // Distinct trimmed lines prevent duplicated OCR blocks from biasing the memory parser.
         texts
             .flatMap { it.lines() }
             .map { it.trim() }

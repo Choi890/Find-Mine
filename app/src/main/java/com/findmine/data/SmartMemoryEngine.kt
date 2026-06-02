@@ -39,6 +39,7 @@ object SmartMemoryEngine {
         now: Long = System.currentTimeMillis(),
         limit: Int = 8,
     ): List<SmartSuggestion> {
+        // Score recent items with both user history and current context so reminders stay practical.
         val latest = lastSeen(records, limit = records.size.coerceAtLeast(1))
         val historyCounts = records.groupingBy { MemoryTextParser.normalize(it.itemName) }.eachCount()
         val contextText = MemoryTextParser.normalizeForEmbedding(context.scheduleText)
@@ -124,6 +125,7 @@ object SmartMemoryEngine {
         records: List<MemoryRecord>,
         limit: Int = 5,
     ): List<PhotoMemoryLink> {
+        // Combine OCR text, parsed fields, and labels before matching photos against saved memories.
         val labelText = analysis.labels.joinToString(" ") { it.text }
         val query = listOf(
             analysis.text,

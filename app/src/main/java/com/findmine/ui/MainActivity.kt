@@ -161,6 +161,7 @@ class MainActivity : ComponentActivity() {
 private fun FindMineApp(
     viewModel: FindMineViewModel = viewModel(),
 ) {
+    // This screen owns Android-only launchers while the ViewModel owns all searchable memory state.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -183,6 +184,7 @@ private fun FindMineApp(
     var voiceTarget by remember { mutableStateOf(VoiceTarget.Search) }
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Result launchers feed speech, camera, gallery, and notification outcomes back into one ViewModel.
     val voiceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
@@ -294,6 +296,7 @@ private fun FindMineApp(
     }
 
     Scaffold(
+        // The scaffold keeps the three workflows connected through shared navigation and reminders.
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
